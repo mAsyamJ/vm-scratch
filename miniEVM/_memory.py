@@ -11,6 +11,13 @@ class Memory(BaseMemory):
     # load 32 bytes from offset and consistently return 32 bytes
     def load (self, offset):
         return self.access(offset, 32)
+
+    # Calculate memory cost
+    def calc_memory_expansion_gas(self, memory_byte_size):
+        memory_size_word = (memory_byte_size + 31) // 32  # integer division
+        memory_cost = (memory_size_word ** 2) / 512 + (3 * memory_size_word)
+        return round(memory_cost)
+
     # store value at offset, extend memory if needed
     def store(self, offset, value):
         memory_expansion_cost = 0
@@ -33,7 +40,9 @@ class Memory(BaseMemory):
                 expansion_size += offset + len(value) - len(self.memory)
                 self.memory.extend([0x00] * expansion_size) # 32 bytes of 0x00
 
-            memory_expansion_cost = expansion_size**2 # simplified
+        # --- calculate gas cost based on total memory size after expansion ---
+        new_memory_size = len(self.memory)
+        memory_expansion_cost = self.calc_memory_expansion_gas(new_memory_size)
 
         super().store(offset, value)
         return memory_expansion_cost
