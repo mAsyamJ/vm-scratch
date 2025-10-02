@@ -87,6 +87,27 @@ class Memory(BaseMemory):
         super().store(offset, value)
         return memory_expansion_cost
 
+class Opcodes:
+    def opcode(evm)::
+        STOP = 0x0
+        ADD        = 0x1
+MUL        = 0x2
+SUB        = 0x3
+DIV        = 0x4
+SDIV       = 0x5
+MOD        = 0x6
+SMOD       = 0x7
+ADDMOD     = 0x8
+MULMOD     = 0x9
+EXP        = 0xA
+SIGNEXTEND = 0xB
+
+LT     = 0x10
+GT     = 0x11
+SLT    = 0x12
+SGT    = 0x13
+EQ     = 0x14
+ISZERO = 0x15
 
 class State:
     def __init__(self, sender, program, gas, value, calldata=[]):
