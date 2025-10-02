@@ -88,27 +88,35 @@ class Memory(BaseMemory):
         return memory_expansion_cost
 
 class Opcodes:
-    def opcode(evm)::
-        STOP = 0x0
-        ADD        = 0x1
-MUL        = 0x2
-SUB        = 0x3
-DIV        = 0x4
-SDIV       = 0x5
-MOD        = 0x6
-SMOD       = 0x7
-ADDMOD     = 0x8
-MULMOD     = 0x9
-EXP        = 0xA
-SIGNEXTEND = 0xB
+    def stop(evm):
+    evm.stop_flag = True
 
-LT     = 0x10
-GT     = 0x11
-SLT    = 0x12
-SGT    = 0x13
-EQ     = 0x14
-ISZERO = 0x15
+    # MATH
+    def add(evm):
+    a, b = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(a+b)
+    evm.pc += 1
+    evm.gas_dec(3)
+        
+    def mul(evm):
+    a, b = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(a*b)
+    evm.pc += 1
+    evm.gas_dec(5)
 
+    def sub(evm):
+    a, b = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(a-b)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    def div(evm):
+    a, b = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(0 if b == 0 else a // b)
+    evm.pc += 1
+    evm.gas_dec(5)
+
+    
 class State:
     def __init__(self, sender, program, gas, value, calldata=[]):
         self.pc = 0
