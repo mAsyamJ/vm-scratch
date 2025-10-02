@@ -1,4 +1,17 @@
-# NOTE: 
+"""
+    @notice
+        Memory
+
+Volatile – exists only during contract execution (like RAM in a computer).
+
+Cleared after the transaction finishes.
+
+Cheap (but not free) — expansion costs gas, but it’s much cheaper than storage.
+
+Word size: 32 bytes.
+
+Use case: temporary computations, intermediate values.
+"""
 class BaseMemory:
     def store(self, offset, value):
         self.memory[offset:offset+len(value)] = value
