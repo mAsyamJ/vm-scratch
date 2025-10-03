@@ -510,8 +510,26 @@ class Opcodes:
 
     # TODO: do refunds
 
-    # =========================== Storage =============================
-    # SLOAD
+    # =========================== Transient Storage =============================
+    # Transient Storage Load
+    def tload(evm): 
+    key = evm.stack.pop().value
+    warm, value = evm.storage.load(key)
+    evm.stack.push(value)
+
+    evm.gas_dec(100)
+    evm.pc += 1
+
+    # Transient Storage Store
+    # NOTE: sstore = real blockchain memory (slow but permanent)
+    #       tstore = temp notes on scratch paper (fast but wiped at the end)
+    def tstore(evm): 
+    key, value = evm.stack.pop(), evm.stack.pop()
+    evm.storage.store(key, value)
+    evm.gas_dec(100)
+    evm.pc += 1
+
+
 
 class State:
     def __init__(self, sender, program, gas, value, calldata=[]):
