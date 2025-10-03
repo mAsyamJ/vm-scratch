@@ -211,6 +211,81 @@ class Opcodes:
         evm.pc += 1
         evm.gas_dec(3)
 
+    # =========================== Logic =============================
+    # And
+    def _and(evm):
+    a, b = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(a & b)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    # Or
+    def _or(evm): 
+    a, b = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(a | b)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    # Xor
+    def _xor(evm): 
+    a, b = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(a ^ b)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    # Not
+    def _not(evm): 
+    a = evm.stack.pop()
+    evm.stack.push(~a)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    # =========================== Byte =============================
+    def byte(evm):
+    i, x = evm.stack.pop(), evm.stack.pop()
+    if i >= 32: result = 0
+    else      : result = (x // pow(256, 31 - i)) % 256
+    evm.stack.push(result)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    # Bit Shift Left
+    def shl(evm): 
+    shift, value = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(value << shift)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    # Bit shift right
+    def shr(evm): 
+    shift, value = evm.stack.pop(), evm.stack.pop()
+    evm.stack.push(value >> shift)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    def sar(evm):
+    shift, value = evm.stack.pop(), evm.stack.pop()
+    if shift >= 256:
+        result = 0 if value >= 0 else UINT_255_NEGATIVE_ONE
+    else:
+        result = (value >> shift) & UINT_256_MAX
+        
+    evm.stack.push(result)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    def sha3(evm):
+    offset, size = evm.stack.pop(), evm.stack.pop()
+    value = evm.memory.access(offset, size)
+    evm.stack.push(hash(str(value)))
+
+    evm.pc += 1
+
+    # calculate gas
+    minimum_word_size = (size + 31) / 32
+    dynamic_gas = 6 * minimum_word_size # TODO: + memory_expansion_cost
+    evm.gas_dec(30 + dynamic_gas)
+
 class State:
     def __init__(self, sender, program, gas, value, calldata=[]):
         self.pc = 0
