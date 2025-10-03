@@ -1,0 +1,7 @@
+#!/home/asyam321/book/evm-from-scratch-book/.venv/bin/python3
+import sys
+from myst_nb.cli import md_to_nb
+if __name__ == '__main__':
+    if sys.argv[0].endswith('.exe'):
+        sys.argv[0] = sys.argv[0][:-4]
+    sys.exit(md_to_nb())

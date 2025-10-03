@@ -162,7 +162,10 @@ class Opcodes:
     b, x = evm.stack.pop(), evm.stack.pop()
     if b <= 31:
         testbit = b * 8 + 7
+        # NOTE: 2^n 
         sign_bit = 1 << testbit
+        # x        = 01111111   # decimal 127
+        # sign_bit = 10000000   # decimal 128
         if x & sign_bit: result = x | (2**256 - sign_bit)
         else           : result = x & (sign_bit - 1)
     else: result = x
@@ -170,6 +173,43 @@ class Opcodes:
     evm.stack.push(result)
     evm.pc += 1
     evm.gas_dec(5)
+
+    # Less than
+    def lt(evm):
+        a,b = evm.stack.pop(), evm.stackj.pop()
+        evm.stack.push(1 if a < b else 0)
+        evm.pc += 1
+        evm.gas_dec(3)
+
+    # Signed less than
+    def slt(evm):
+        a, b = evm.stack.pop(), evm.stack.pop()
+        a = unsigned_to_signed(a)
+        b = unsigned_to_signed(b)
+        evm.stack.push(1 if a < b else 0)
+        evm.pc += 1
+        evm.gas_dec(3)
+
+    # Greater than
+    def gt(evm): # greater than
+        a, b = evm.stack.pop(), evm.stack.pop()
+        evm.stack.push(1 if a > b else 0)
+        evm.pc += 1
+        evm.gas_dec(3)
+
+    # Equal
+    def eq(evm):
+        a, b = evm.stack.pop(), evm.stack.pop()
+        evm.stack.push(1 if a == b else 0)
+        evm.pc += 1
+        evm.gas_dec(3)
+
+    # Is Zero
+    def iszero(evm):
+        a = evm.stack.pop()
+        evm.stack.push(1 if a == 0 else 0)
+        evm.pc += 1
+        evm.gas_dec(3)
 
 class State:
     def __init__(self, sender, program, gas, value, calldata=[]):
