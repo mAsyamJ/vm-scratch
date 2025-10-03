@@ -286,6 +286,155 @@ class Opcodes:
     dynamic_gas = 6 * minimum_word_size # TODO: + memory_expansion_cost
     evm.gas_dec(30 + dynamic_gas)
 
+    # =========================== Environment =============================
+    # Address
+    def address(evm):
+    evm.stack.push(evm.sender)
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    # Balance (mock)
+    def balance(evm):
+    address = evm.stack.pop()
+    evm.stack.push(99999999999)
+
+    evm.pc += 1
+    evm.gas_dec(2600) # 100 if warm
+
+    # Origin
+    def origin(evm):
+    evm.stack.push(evm.sender)
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    # Caller (Mock)
+    def caller(evm):
+    evm.stack.push("0x414b60745072088d013721b4a28a0559b1A9d213")
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    # Callvalue
+    def callvalue(evm):
+    evm.stack.push(evm.value)
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    #CalldataLoad
+    def calldataload(evm):
+    i = evm.stack.pop()
+
+    delta = 0
+    if i+32 > len(evm.calldata):
+        delta = i+32 - len(evm.calldata)
+
+    # always has to be 32 bytes
+    # if its not we append 0x00 bytes until it is
+    calldata = evm.calldata[i:i+32-delta]
+    calldata += 0x00*delta
+
+    evm.stack.push(calldata)
+    evm.pc += 1
+    evm.gas_dec(3)
+
+    # CallDataSize
+    def calldatasize(evm):
+    evm.stack.push(len(evm.calldata))
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    # CallDaatCopy
+    def calldatacopy(evm):
+    destOffset = evm.stack.pop()
+    offset = evm.stack.pop()
+    size = evm.stack.pop()
+
+    calldata = evm.calldata[offset:offset+size]
+    memory_expansion_cost = evm.memory.store(destOffset, calldata)
+
+    static_gas = 3
+    minimum_word_size = (size + 31) // 32
+    dynamic_gas = 3 * minimum_word_size + memory_expansion_cost
+
+    evm.gas_dec(static_gas + dynamic_gas)
+    evm.pc += 1
+
+    # CodeSize
+    def codesize(evm):
+    evm.stack.push(len(evm.program))
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    # CodeCopy
+    def codecopy(evm):
+    destOffset = evm.stack.pop()
+    offset     = evm.stack.pop()
+    size       = evm.stack.pop()
+
+    code = evm.program[offset:offset+size]
+    memory_expansion_cost = evm.memory.store(destOffset, code)
+
+    static_gas = 3
+    minimum_word_size = (size + 31) / 32
+    dynamic_gas = 3 * minimum_word_size + memory_expansion_cost
+
+    evm.gas_dec(static_gas + dynamic_gas)
+    evm.pc += 1
+
+    # GasPrice
+    def gasprice(evm):
+    evm.stack.push(0x00)
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    # External Code Size
+    def extcodesize(evm):
+    address = evm.stack.pop()
+    evm.stack.push(0x00)
+    evm.gas_dec(2600) # 100 if warm
+    evm.pc += 1
+
+    # External Code Copy:
+    def extcodecopy(evm):
+    address    = evm.stack.pop()
+    destOffset = evm.stack.pop()
+    offset     = evm.stack.pop()
+    size       = evm.stack.pop()
+
+    extcode = [] # no external code
+    memory_expansion_cost = evm.memory.store(destOffset, extcode)
+
+    # refactor this in seperate method
+    minimum_word_size = (size + 31) / 32
+    dynamic_gas = 3 * minimum_word_size + memory_expansion_cost
+    address_access_cost = 100 if warm else 2600
+
+    evm.gas_dec(dynamic_gas + address_access_cost)
+    evm.pc += 1
+
+    # Retrubn Data Size
+    def returndatasize(evm):
+    evm.stack.push(0x00) # no return data
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    # Return Data Copy
+    def returndatacopy(evm):
+    destOffset = evm.stack.pop()
+    offset     = evm.stack.pop()
+    size       = evm.stack.pop()
+
+    returndata            = evm.program[offset:offset+size]
+    memory_expansion_cost = evm.memory.store(destOffset, returndata)
+
+    minimum_word_size = (size + 31) / 32
+    dynamic_gas = 3 * minimum_word_size + memory_expansion_cost
+
+    evm.gas_dec(3 + dynamic_gas)
+    evm.pc += 1
+
+    # External Code Hash
+
+
 class State:
     def __init__(self, sender, program, gas, value, calldata=[]):
         self.pc = 0
