@@ -433,7 +433,65 @@ class Opcodes:
     evm.pc += 1
 
     # External Code Hash
+    def extcodehash(evm):
+    address = evm.stack.pop()
+    evm.stack.push(0x00) # no code
 
+    evm.gas_dec(2600) # 100 if warm
+    evm.pc += 1
+
+    # Block Hash
+    def blockhash(evm):
+    blockNumber = evm.stack.pop()
+    if blockNumber > 256: raise Exception("Only last 256 blocks can be accessed")
+    evm.stack.push(0x1cbcfa1ffb1ca1ca8397d4f490194db5fc0543089b9dee43f76cf3f962a185e8)
+    evm.pc += 1
+    evm.gas_dec(20)
+
+    # Get address of the miner for this block
+    def coinbase(evm):
+    evm.stack.push(0x1cbcfa1ffb1ca1ca8397d4f490194db5fc0543089b9dee43f76cf3f962a185e8)
+    evm.pc += 1
+    evm.gas_dec(2)
+
+    # Pop
+    def _pop(evm):
+    evm.pc += 1
+    evm.gas_dec(2)
+    evm.stack.pop(0)
+
+    # =========================== Memory =============================
+    # MLOAD
+    def mload(evm): 
+    offset = evm.stack.pop()
+    value = evm.memory.load(offset)
+    evm.stack.push(value)
+    evm.pc += 1
+
+    # MSTORE
+    def mstore(evm): 
+    # TODO: should be right aligned
+    offset, value = evm.stack.pop(), evm.stack.pop()
+    evm.memory.store(offset, value)
+    evm.pc += 1
+
+    def mstore8(evm): 
+    offset, value = evm.stack.pop(), evm.stack.pop()
+    evm.memory.store(offset, value)
+    evm.pc += 1
+
+    # =========================== Storage =============================
+    # SLOAD
+    def sload(evm): 
+    key = evm.stack.pop().value
+    warm, value = evm.storage.load(key)
+    evm.stack.push(value)
+
+    evm.gas_dec(2100) # 100 if warm
+    evm.pc += 1
+
+    # SSTORE
+    
 
 class State:
     def __init__(self, sender, program, gas, value, calldata=[]):
